@@ -81,6 +81,20 @@
     color: var(--paper);
   }
 
+  .chip-oblibene {
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .chip-oblibene:hover { color: var(--accent); border-color: var(--accent); }
+
+  .chip-oblibene[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
   /* ---- karta s výmluvou ---- */
 
   .karta {
@@ -123,6 +137,24 @@
   }
 
   .karta.nova .vymluva, .karta.nova .stitek { animation: prilet .28s ease-out; }
+
+  /* ---- srdíčko (oblíbené) ---- */
+
+  .srdce {
+    display: none;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px;
+    transition: transform .1s, color .15s;
+  }
+
+  .srdce:hover { color: var(--accent); }
+  .srdce:active { transform: scale(.9); }
+  .srdce[aria-pressed="true"] { color: var(--accent); }
 
   /* ---- tlačítko ---- */
 
@@ -188,6 +220,7 @@
   <div class="karta" id="karta" aria-live="polite">
     <p class="vymluva uvodni" id="vymluva">Zmáčkni tlačítko a nemáš to.</p>
     <span class="stitek" id="stitek"></span>
+    <button class="srdce" id="srdce" aria-pressed="false" title="Přidat do oblíbených">♡</button>
   </div>
 
   <div class="akce">
@@ -318,11 +351,16 @@ let kategorie = "vše";
 let pocet = 0;
 let posledni = null;
 
+/* Oblíbené se drží jenom v paměti - po zavření nebo obnovení stránky zmizí. */
+const OBLIBENE = "★ oblíbené";
+const oblibene = new Set();
+
 const el = {
   filtry:      document.getElementById("filtry"),
   karta:       document.getElementById("karta"),
   vymluva:     document.getElementById("vymluva"),
   stitek:      document.getElementById("stitek"),
+  srdce:       document.getElementById("srdce"),
   btn:         document.getElementById("btn"),
   pocet:       document.getElementById("pocet"),
   zasoba:      document.getElementById("zasoba"),
@@ -332,6 +370,7 @@ const el = {
 /* ---- výmluvy, ze kterých se zrovna losuje (podle zvoleného filtru) ---- */
 
 function fond() {
+  if (kategorie === OBLIBENE) return [...oblibene];
   return VYMLUVY.filter(v => kategorie === "vše" || v.kat === kategorie);
 }
 
@@ -341,14 +380,34 @@ function vykresliFiltry() {
   const kategorie_v_datech = [...new Set(VYMLUVY.map(v => v.kat))];
   el.filtry.innerHTML = "";
 
-  for (const nazev of ["vše", ...kategorie_v_datech]) {
+  for (const nazev of ["vše", ...kategorie_v_datech, OBLIBENE]) {
     const chip = document.createElement("button");
-    chip.className = "chip";
-    chip.textContent = nazev;
+    chip.className = nazev === OBLIBENE ? "chip chip-oblibene" : "chip";
+    chip.textContent = nazev === OBLIBENE ? `${nazev} (${oblibene.size})` : nazev;
     chip.setAttribute("aria-pressed", nazev === kategorie);
     chip.onclick = () => { kategorie = nazev; vykresliFiltry(); vykresliZasobu(); };
     el.filtry.appendChild(chip);
   }
+}
+
+/* ---- srdíčko na kartě ---- */
+
+function vykresliSrdce() {
+  if (!posledni) { el.srdce.style.display = "none"; return; }
+  const jeOblibena = oblibene.has(posledni);
+  el.srdce.style.display = "inline-flex";
+  el.srdce.setAttribute("aria-pressed", jeOblibena);
+  el.srdce.textContent = jeOblibena ? "♥" : "♡";
+  el.srdce.title = jeOblibena ? "Odebrat z oblíbených" : "Přidat do oblíbených";
+}
+
+function prepniOblibenou() {
+  if (!posledni) return;
+  if (oblibene.has(posledni)) oblibene.delete(posledni);
+  else oblibene.add(posledni);
+  vykresliSrdce();
+  vykresliFiltry();
+  if (kategorie === OBLIBENE) vykresliZasobu();
 }
 
 /* ---- kolik výmluv je po ruce ---- */
@@ -391,6 +450,7 @@ function vymluvSe() {
   el.vymluva.classList.remove("uvodni");
   el.stitek.textContent = v.kat;
   el.pocet.textContent = pocet;
+  vykresliSrdce();
 
   el.karta.classList.remove("nova");
   void el.karta.offsetWidth;
@@ -400,6 +460,7 @@ function vymluvSe() {
 /* ---- ovládání ---- */
 
 el.btn.onclick = vymluvSe;
+el.srdce.onclick = prepniOblibenou;
 
 document.addEventListener("keydown", e => {
   if (e.code === "Space" && e.target === document.body) {

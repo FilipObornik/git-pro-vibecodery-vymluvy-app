@@ -81,6 +81,20 @@
     color: var(--paper);
   }
 
+  .chip-oblibene {
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .chip-oblibene:hover { color: var(--accent); border-color: var(--accent); }
+
+  .chip-oblibene[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
   /* ---- karta s výmluvou ---- */
 
   .karta {
@@ -367,7 +381,7 @@ function vykresliFiltry() {
 
   for (const nazev of ["vše", ...kategorie_v_datech, OBLIBENE]) {
     const chip = document.createElement("button");
-    chip.className = "chip";
+    chip.className = nazev === OBLIBENE ? "chip chip-oblibene" : "chip";
     chip.textContent = nazev === OBLIBENE ? `${nazev} (${oblibene.size})` : nazev;
     chip.setAttribute("aria-pressed", nazev === kategorie);
     chip.onclick = () => { kategorie = nazev; vykresliFiltry(); vykresliZasobu(); };

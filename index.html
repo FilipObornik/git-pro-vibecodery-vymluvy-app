@@ -154,6 +154,8 @@
 
   .pocitadlo b { color: var(--ink); font-variant-numeric: tabular-nums; }
 
+  .pocitadlo .oddelovac { margin: 0 8px; opacity: .45; }
+
   footer {
     margin-top: 48px;
     text-align: center;
@@ -192,7 +194,7 @@
     <button class="btn" id="btn">Potřebuju výmluvu</button>
   </div>
 
-  <p class="pocitadlo">Vyžehleno situací: <b id="pocet">0</b></p>
+  <p class="pocitadlo">Vyžehleno situací: <b id="pocet">0</b><span class="oddelovac">·</span>V zásobě: <b id="zasoba">0</b> <span id="zasobaSlovo">výmluv</span></p>
 
   <footer>
     Funguje i <kbd>mezerník</kbd>. Kdyby ne, zkus to vypnout a zapnout.
@@ -217,6 +219,14 @@ const VYMLUVY = [
   { text: "Mně to přišlo do spamu.", kat: "klasika" },
   { text: "To dělá jenom tobě.", kat: "klasika" },
   { text: "Mně se to nikdy nestalo, takže se to vlastně neděje.", kat: "klasika" },
+  { text: "Máš to v cache. Dej ctrl+F5.", kat: "klasika" },
+  { text: "Máš starou verzi. Nová vyšla před chvílí.", kat: "klasika" },
+  { text: "To je známý problém. Je v backlogu od loňska.", kat: "klasika" },
+  { text: "Zkus to v jiném prohlížeči. A na jiném počítači. A radši i jindy.", kat: "klasika" },
+  { text: "Na to je jiný tým. Nevím který, ale jiný.", kat: "klasika" },
+  { text: "Já to viděl fungovat na vlastní oči. Rozbilo se to až tobě.", kat: "klasika" },
+  { text: "To bude tím antivirem.", kat: "klasika" },
+  { text: "Muselo se to změnit při aktualizaci. Já to nebyl.", kat: "klasika" },
 
   { text: "Psala to AI. Já jsem to jenom odsouhlasil.", kat: "AI" },
   { text: "Zeptal jsem se AI a byla si naprosto jistá.", kat: "AI" },
@@ -234,6 +244,14 @@ const VYMLUVY = [
   { text: "Není to výmysl. Je to kreativní pojetí skutečnosti.", kat: "AI" },
   { text: "Poprosil jsem ji, ať to zkrátí. Tak to smazala.", kat: "AI" },
   { text: "Já se s ní nehádám. Ona má víc informací než já.", kat: "AI" },
+  { text: "Byl to levnější model. Šetřím firmě peníze.", kat: "AI" },
+  { text: "Došel jí kontext. Zapomněla, o co jsem ji prosil.", kat: "AI" },
+  { text: "Napsala k tomu i testy. Ty jsou taky špatně, ale zelené.", kat: "AI" },
+  { text: "Řekla, že to opravila. Opravila něco jiného.", kat: "AI" },
+  { text: "Ptal jsem se dvakrát a dostal dvě odpovědi. Vybral jsem si tu hezčí.", kat: "AI" },
+  { text: "Halucinace? Já tomu říkám první verze.", kat: "AI" },
+  { text: "Bylo tam i varování. To jsem přeskočil.", kat: "AI" },
+  { text: "Ona za to nemůže, zadal jsem to špatně. Zadání ale psala taky ona.", kat: "AI" },
 
   { text: "Fungovalo to. Než jsem poprosil o jednu drobnost.", kat: "appka" },
   { text: "Chtěl jsem změnit barvu tlačítka. Rozbilo se přihlašování.", kat: "appka" },
@@ -243,6 +261,13 @@ const VYMLUVY = [
   { text: "Nesahal jsem na to. Jenom jsem poprosil o vylepšení.", kat: "appka" },
   { text: "Smazalo se to samo. Já mačkal jenom Enter.", kat: "appka" },
   { text: "Vrátit se k verzi, co fungovala, bohužel nejde. Neptej se proč.", kat: "appka" },
+  { text: "Lokálně to jede. Produkce má svůj názor.", kat: "appka" },
+  { text: "Testy prošly. Testuju jenom to, co funguje.", kat: "appka" },
+  { text: "Zabralo mi to pět minut. Ta pátá minuta trvá od úterý.", kat: "appka" },
+  { text: "Přidal jsem jednu knihovnu. Stáhla si tři sta dalších.", kat: "appka" },
+  { text: "Zálohu máme. Obnovu jsme nikdy nezkoušeli.", kat: "appka" },
+  { text: "Ten kód nikdo nekontroloval. Ani já ne.", kat: "appka" },
+  { text: "Nasadil jsem to v pátek večer. Chtěl jsem mít klid o víkendu.", kat: "appka" },
 
   { text: "Odhadoval jsem dvě hodiny. To byl odhad, ne slib.", kat: "termín" },
   { text: "Nebylo to v zadání.", kat: "termín" },
@@ -250,12 +275,37 @@ const VYMLUVY = [
   { text: "Napsal jsem to do chatu, kde to nikdo nečte.", kat: "termín" },
   { text: "Byl jsem na školení, jak líp plánovat čas.", kat: "termín" },
   { text: "Měl jsem to v kalendáři. Bez připomínky.", kat: "termín" },
+  { text: "Termín platí. Jenom se mezitím třikrát změnilo zadání.", kat: "termín" },
+  { text: "Čekám na podklady. Měl mi je poslat kolega, kterému jsem o ně nenapsal.", kat: "termín" },
+  { text: "Dělám na tom. Zrovna teď zrovna ne, ale dělám.", kat: "termín" },
+  { text: "Prioritizoval jsem. Tohle skončilo krásné druhé.", kat: "termín" },
+  { text: "Sešlo se to. Jako každý měsíc přesně v tenhle den.", kat: "termín" },
 
   { text: "Nefungoval mi mikrofon. Já vás slyšel, vy mě ne.", kat: "schůzka" },
   { text: "Vypadl mi internet přesně ve chvíli, kdy jsem měl mluvit.", kat: "schůzka" },
   { text: "Pozvánka mi přišla v jiné časové zóně.", kat: "schůzka" },
   { text: "Kamera se mi nezapla. Nový počítač.", kat: "schůzka" },
   { text: "Byl jsem tam celou dobu. Jenom potichu.", kat: "schůzka" },
+  { text: "Sdílel jsem obrazovku. Bohužel tu s druhým monitorem.", kat: "schůzka" },
+  { text: "Mluvil jsem dvě minuty na mute. Byl to můj nejlepší výstup.", kat: "schůzka" },
+  { text: "Vypadl jsem a vrátil se až po hlasování. Souhlasím se vším.", kat: "schůzka" },
+  { text: "Přišel jsem pozdě, protože předchozí schůzka se protáhla. Ta začala taky pozdě.", kat: "schůzka" },
+  { text: "Zápis píše AI. Přečtu si potom, co jsem řekl.", kat: "schůzka" },
+
+  { text: "Napsal jsem to. Zůstalo to v konceptech.", kat: "e-mail" },
+  { text: "Odpověděl jsem jenom jemu. Mělo to jít všem.", kat: "e-mail" },
+  { text: "Ten mail zapadl. Bylo nad ním dalších čtyřicet.", kat: "e-mail" },
+  { text: "Přílohu jsem zapomněl. Ta druhá zpráva byla ta důležitá.", kat: "e-mail" },
+  { text: "Byl jsem jenom v kopii. To znamená, že to nebylo na mě.", kat: "e-mail" },
+  { text: "Označil jsem to jako nepřečtené. Tím to pro mě bylo vyřešené.", kat: "e-mail" },
+  { text: "Odpovím do konce dne. Neupřesnil jsem kterého.", kat: "e-mail" },
+
+  { text: "Byl jsem u toho. Jenom jsem si zrovna odskočil pro kafe.", kat: "home office" },
+  { text: "Kurýr zvonil přesně během standupu.", kat: "home office" },
+  { text: "Sousedi vrtají. Vrtají od března.", kat: "home office" },
+  { text: "Doma se soustředím líp. Až na tu chvíli mezi devátou a pátou.", kat: "home office" },
+  { text: "Byl jsem online celý den. Ta zelená tečka nelže.", kat: "home office" },
+  { text: "Pes štěkal jenom v mojí půlce hovoru.", kat: "home office" },
 ];
 
 /* ---- stav ---- */
@@ -265,13 +315,21 @@ let pocet = 0;
 let posledni = null;
 
 const el = {
-  filtry:  document.getElementById("filtry"),
-  karta:   document.getElementById("karta"),
-  vymluva: document.getElementById("vymluva"),
-  stitek:  document.getElementById("stitek"),
-  btn:     document.getElementById("btn"),
-  pocet:   document.getElementById("pocet"),
+  filtry:      document.getElementById("filtry"),
+  karta:       document.getElementById("karta"),
+  vymluva:     document.getElementById("vymluva"),
+  stitek:      document.getElementById("stitek"),
+  btn:         document.getElementById("btn"),
+  pocet:       document.getElementById("pocet"),
+  zasoba:      document.getElementById("zasoba"),
+  zasobaSlovo: document.getElementById("zasobaSlovo"),
 };
+
+/* ---- výmluvy, ze kterých se zrovna losuje (podle zvoleného filtru) ---- */
+
+function fond() {
+  return VYMLUVY.filter(v => kategorie === "vše" || v.kat === kategorie);
+}
 
 /* ---- filtry se poskládají z kategorií, které v datech reálně jsou ---- */
 
@@ -284,21 +342,35 @@ function vykresliFiltry() {
     chip.className = "chip";
     chip.textContent = nazev;
     chip.setAttribute("aria-pressed", nazev === kategorie);
-    chip.onclick = () => { kategorie = nazev; vykresliFiltry(); };
+    chip.onclick = () => { kategorie = nazev; vykresliFiltry(); vykresliZasobu(); };
     el.filtry.appendChild(chip);
   }
+}
+
+/* ---- kolik výmluv je po ruce ---- */
+
+function sklonuj(n) {
+  if (n === 1) return "výmluva";
+  if (n >= 2 && n <= 4) return "výmluvy";
+  return "výmluv";
+}
+
+function vykresliZasobu() {
+  const kolik = fond().length;
+  el.zasoba.textContent = kolik;
+  el.zasobaSlovo.textContent = sklonuj(kolik);
 }
 
 /* ---- losování ---- */
 
 function vyber() {
-  const fond = VYMLUVY.filter(v => kategorie === "vše" || v.kat === kategorie);
-  if (fond.length === 0) return null;
-  if (fond.length === 1) return fond[0];
+  const nabidka = fond();
+  if (nabidka.length === 0) return null;
+  if (nabidka.length === 1) return nabidka[0];
 
   let kandidat;
   do {
-    kandidat = fond[Math.floor(Math.random() * fond.length)];
+    kandidat = nabidka[Math.floor(Math.random() * nabidka.length)];
   } while (kandidat === posledni);
 
   return kandidat;
@@ -333,6 +405,7 @@ document.addEventListener("keydown", e => {
 });
 
 vykresliFiltry();
+vykresliZasobu();
 </script>
 
 </body>

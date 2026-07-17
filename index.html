@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Výmluvomat 3000</title>
+<style>
+  :root {
+    --paper:   #f7f5f2;
+    --card:    #ffffff;
+    --ink:     #1c1a17;
+    --muted:   #8a827a;
+    --line:    #e2ddd6;
+    --accent:  #d8452f;
+    --shadow:  0 1px 2px rgba(28,26,23,.05), 0 8px 24px rgba(28,26,23,.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:  #14130f;
+      --card:   #1e1c18;
+      --ink:    #f0ece5;
+      --muted:  #8a827a;
+      --line:   #2c2924;
+      --accent: #ff5a3d;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 48px 24px 96px;
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.6 ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 620px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 32px; }
+
+  h1 {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+  }
+
+  .sub { color: var(--muted); margin: 0; font-size: 15px; }
+
+  /* ---- filtry ---- */
+
+  .filtry {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .chip {
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: .15s;
+  }
+
+  .chip:hover { color: var(--ink); border-color: var(--muted); }
+
+  .chip[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  /* ---- karta s výmluvou ---- */
+
+  .karta {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 40px 32px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .vymluva {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+  }
+
+  .vymluva.uvodni { color: var(--muted); font-weight: 400; font-size: 19px; }
+
+  .stitek {
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    min-height: 18px;
+  }
+
+  @keyframes prilet {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .karta.nova .vymluva, .karta.nova .stitek { animation: prilet .28s ease-out; }
+
+  /* ---- tlačítko ---- */
+
+  .akce { display: flex; justify-content: center; margin: 28px 0 16px; }
+
+  .btn {
+    background: var(--accent);
+    color: #fff;
+    border: 0;
+    border-radius: 12px;
+    padding: 14px 28px;
+    font: inherit;
+    font-weight: 600;
+    font-size: 17px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform .08s, filter .15s;
+  }
+
+  .btn:hover { filter: brightness(1.08); }
+  .btn:active { transform: scale(.97); }
+
+  .pocitadlo {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .pocitadlo b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  footer {
+    margin-top: 48px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  kbd {
+    font: inherit;
+    font-size: 12px;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 1px 6px;
+    background: var(--card);
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <h1>Výmluvomat 3000</h1>
+    <p class="sub">Nefunguje to? Nevadí. Hlavně že to není tvoje vina.</p>
+  </header>
+
+  <div class="filtry" id="filtry"></div>
+
+  <div class="karta" id="karta">
+    <p class="vymluva uvodni" id="vymluva">Zmáčkni tlačítko a nemáš to.</p>
+    <span class="stitek" id="stitek"></span>
+  </div>
+
+  <div class="akce">
+    <button class="btn" id="btn">Potřebuju výmluvu</button>
+  </div>
+
+  <p class="pocitadlo">Vyžehleno situací: <b id="pocet">0</b></p>
+
+  <footer>
+    Funguje i <kbd>mezerník</kbd>. Kdyby ne, zkus to vypnout a zapnout.
+  </footer>
+
+</div>
+
+<script>
+/* ==========================================================================
+   TADY PŘIDÁVEJ SVOJE VÝMLUVY.
+   Jeden řádek = jedna výmluva. Kategorii si klidně vymysli vlastní,
+   filtry nahoře se dogenerují samy.
+   ========================================================================== */
+
+const VYMLUVY = [
+  { text: "Mně to na počítači funguje.", kat: "klasika" },
+  { text: "Zkoušel jsi to vypnout a zapnout?", kat: "klasika" },
+  { text: "To tam bylo už předtím, než jsem přišel.", kat: "klasika" },
+  { text: "Není to chyba. Je to záměr.", kat: "klasika" },
+  { text: "Funguje to. Jenom se to musí umět použít.", kat: "klasika" },
+  { text: "Já jsem tam nic neměnil.", kat: "klasika" },
+  { text: "Mně to přišlo do spamu.", kat: "klasika" },
+  { text: "To dělá jenom tobě.", kat: "klasika" },
+  { text: "Mně se to nikdy nestalo, takže se to vlastně neděje.", kat: "klasika" },
+
+  { text: "Psala to AI. Já jsem to jenom odsouhlasil.", kat: "AI" },
+  { text: "Zeptal jsem se AI a byla si naprosto jistá.", kat: "AI" },
+  { text: "Napsala mi, že je vše hotové. Tak jsem jí věřil.", kat: "AI" },
+  { text: "Ten odkaz si vymyslela. Já ho jenom poslal dál.", kat: "AI" },
+  { text: "Nečetl jsem to celé. Bylo to dlouhé a znělo to sebejistě.", kat: "AI" },
+  { text: "Ta citace zněla důvěryhodně.", kat: "AI" },
+  { text: "Tu statistiku si vycucala z prstu, ale v prezentaci vypadala hezky.", kat: "AI" },
+  { text: "Prompt jsem napsal správně. Vyložila si ho po svém.", kat: "AI" },
+  { text: "Omluvila se a slíbila nápravu. Co víc chceš.", kat: "AI" },
+  { text: "Řekla mi, že mám naprostou pravdu. Tak jsem přestal pochybovat.", kat: "AI" },
+  { text: "Ta tři emoji na konci tam dala ona, ne já.", kat: "AI" },
+  { text: "Zní to jako od AI, protože jsem měl málo času. Ne protože to psala AI.", kat: "AI" },
+  { text: "Ten člověk, kterého jsem citoval, možná neexistuje. To je detail.", kat: "AI" },
+  { text: "Není to výmysl. Je to kreativní pojetí skutečnosti.", kat: "AI" },
+  { text: "Poprosil jsem ji, ať to zkrátí. Tak to smazala.", kat: "AI" },
+  { text: "Já se s ní nehádám. Ona má víc informací než já.", kat: "AI" },
+
+  { text: "Fungovalo to. Než jsem poprosil o jednu drobnost.", kat: "appka" },
+  { text: "Chtěl jsem změnit barvu tlačítka. Rozbilo se přihlašování.", kat: "appka" },
+  { text: "Je to hotové z devadesáti procent. Už tři týdny.", kat: "appka" },
+  { text: "Postavil jsem to za odpoledne. Opravuju to půl roku.", kat: "appka" },
+  { text: "Nevím, jak to funguje. Vím jenom, že to fungovalo.", kat: "appka" },
+  { text: "Nesahal jsem na to. Jenom jsem poprosil o vylepšení.", kat: "appka" },
+  { text: "Smazalo se to samo. Já mačkal jenom Enter.", kat: "appka" },
+  { text: "Vrátit se k verzi, co fungovala, bohužel nejde. Neptej se proč.", kat: "appka" },
+
+  { text: "Odhadoval jsem dvě hodiny. To byl odhad, ne slib.", kat: "termín" },
+  { text: "Nebylo to v zadání.", kat: "termín" },
+  { text: "Myslel jsem, že to dělá někdo jiný.", kat: "termín" },
+  { text: "Napsal jsem to do chatu, kde to nikdo nečte.", kat: "termín" },
+  { text: "Byl jsem na školení, jak líp plánovat čas.", kat: "termín" },
+  { text: "Měl jsem to v kalendáři. Bez připomínky.", kat: "termín" },
+
+  { text: "Nefungoval mi mikrofon. Já vás slyšel, vy mě ne.", kat: "schůzka" },
+  { text: "Vypadl mi internet přesně ve chvíli, kdy jsem měl mluvit.", kat: "schůzka" },
+  { text: "Pozvánka mi přišla v jiné časové zóně.", kat: "schůzka" },
+  { text: "Kamera se mi nezapla. Nový počítač.", kat: "schůzka" },
+  { text: "Byl jsem tam celou dobu. Jenom potichu.", kat: "schůzka" },
+];
+
+/* ---- stav ---- */
+
+let kategorie = "vše";
+let pocet = 0;
+let posledni = null;
+
+const el = {
+  filtry:  document.getElementById("filtry"),
+  karta:   document.getElementById("karta"),
+  vymluva: document.getElementById("vymluva"),
+  stitek:  document.getElementById("stitek"),
+  btn:     document.getElementById("btn"),
+  pocet:   document.getElementById("pocet"),
+};
+
+/* ---- filtry se poskládají z kategorií, které v datech reálně jsou ---- */
+
+function vykresliFiltry() {
+  const kategorie_v_datech = [...new Set(VYMLUVY.map(v => v.kat))];
+  el.filtry.innerHTML = "";
+
+  for (const nazev of ["vše", ...kategorie_v_datech]) {
+    const chip = document.createElement("button");
+    chip.className = "chip";
+    chip.textContent = nazev;
+    chip.setAttribute("aria-pressed", nazev === kategorie);
+    chip.onclick = () => { kategorie = nazev; vykresliFiltry(); };
+    el.filtry.appendChild(chip);
+  }
+}
+
+/* ---- losování ---- */
+
+function vyber() {
+  const fond = VYMLUVY.filter(v => kategorie === "vše" || v.kat === kategorie);
+  if (fond.length === 0) return null;
+  if (fond.length === 1) return fond[0];
+
+  let kandidat;
+  do {
+    kandidat = fond[Math.floor(Math.random() * fond.length)];
+  } while (kandidat === posledni);
+
+  return kandidat;
+}
+
+function vymluvSe() {
+  const v = vyber();
+  if (!v) return;
+
+  posledni = v;
+  pocet++;
+
+  el.vymluva.textContent = v.text;
+  el.vymluva.classList.remove("uvodni");
+  el.stitek.textContent = v.kat;
+  el.pocet.textContent = pocet;
+
+  el.karta.classList.remove("nova");
+  void el.karta.offsetWidth;
+  el.karta.classList.add("nova");
+}
+
+/* ---- ovládání ---- */
+
+el.btn.onclick = vymluvSe;
+
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" && e.target === document.body) {
+    e.preventDefault();
+    vymluvSe();
+  }
+});
+
+vykresliFiltry();
+</script>
+
+</body>
+</html>
